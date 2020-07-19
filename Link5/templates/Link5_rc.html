@@ -1,0 +1,388 @@
+{% extends 'basepage.html' %}
+{% block content %}
+<div style="background-color:white"><br><h2><center>Custom Dataset</center></h2><hr></div><br>
+<div class="container" style="background-color:white;border:1px solid #d1d1d1">
+
+
+<center><h4>Training Dataset</h4></center><br><br>
+<center>
+	<div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Rows: {{train_rows}} </center></div>
+	<div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Columns: {{train_cols}}</center></div>
+</center>
+<br><hr>
+<center><h5>Top 10 rows of training dataset for visualization:</h5></center><br>
+{{train_data1 | safe}}
+<br><hr><br>
+
+<form id="trainform" action="{% url 'prec' %}" method="post">
+{% csrf_token %}
+<div class="row">
+<div class="col"><center><h5>Select n-1 columns to include in the training model:</h5></center></div>
+<div class="col"><center><h5>Select target column:</h5></center></div>
+<div class="col"><center><h5>Select classification algorithm:</h5></center></div>
+</div>
+<div style="padding-bottom:5px" class="row">
+<div style="border-right:1.5px solid #C0C0C0" class="col">
+<div style="padding-left:100px;display:inline-block" >
+{% for link in train_arr %}
+    <input id='{{forloop.counter}}ch' onclick="func({{forloop.counter}})"  type="checkbox" name="checks[]" value={{forloop.counter0}} />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+<div style="border-right:1.5px solid #C0C0C0" class="col">
+<div style="padding-left:100px;display:inline-block" >
+{% for link in train_arr %}
+    <input id='{{forloop.counter}}' type="radio" name="target" value={{forloop.counter0}} required />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+<div class="col">
+<div style="padding-left:100px;display:inline-block" >
+
+  <input id="al_ch" type="checkbox" name="algo[]" value="dt" checked />Decision Tree<br>
+	<input id="al_ch" type="checkbox" name="algo[]" value="knn" checked />KNN<br>
+	<input id="al_ch" type="checkbox" name="algo[]" value="rf" checked />Random Forest<br>
+	<input id="al_ch" type="checkbox" name="algo[]" value="svm" checked />SVM<br>
+
+</div>
+</div>
+</div>
+<center><input onclick="resetTest()" type="submit" value="Train Model"></center>
+</form>
+<center><h5><div id="spinner">&nbsp;</div></h5></center>
+
+<script>
+// In case the user retrains the model, this code will reset the testform 
+var len1={{test_arr|length}}
+var x=0;
+var y=0;
+function resetTest(){
+document.getElementById('testform').reset();
+for(i=1;i<=len1;i++){
+if(document.getElementById('ch'+i).disabled == true){
+document.getElementById('ch'+i).disabled = false;
+}
+document.getElementById(i+'_').disabled = false;
+}
+//x ko zarurat nhi sirf y=0 krna pdega kyunki test form reset ho ra, train as it is hi hai
+y=0
+}
+$("#trainform").submit(function(e) {
+e.preventDefault();
+checked = $("input[type=checkbox]:checked").length;
+if(!checked) {
+      alert("You must check at least one column checkbox");
+      return false;
+}
+
+var n1 = $('input:checkbox[id="al_ch"]:checked').length;
+if(!n1) {
+   alert("You must check at least one algorithm.");
+   return false;
+}
+//next line is if user retrains the model,since it was changed to green, change it back to black
+$("#spinner").css("color", "black");
+$("#spinner").html("<span class='spinner-border text-primary spinner-border-sm' style='width: 3rem; height: 3rem;vertical-align: middle;' role='status' aria-hidden='true'></span>&nbsp;&nbsp; Training Model...");
+var serializedData=$("#trainform").serialize();
+$.ajax({
+url:$("#trainform").attr('action'),
+data:serializedData,
+type:'post',
+success: function(response){
+$("#spinner").css("color", "#00D54F");
+$("#spinner").html("Model Trained!");
+$("#testdata").css("display", "block");
+$('html, body').animate({
+        scrollTop: $("#testdata").offset().top
+    }, 1000);
+},
+error: function (textStatus, errorThrown) {
+		$("#spinner").css("color", "black");
+      $("#spinner").html("Error! Model was not trained");
+	  $("#testdata").css("display", "none");
+}
+})
+});
+</script>
+
+<script>
+function func(id){
+var len={{train_arr|length}};
+//first part ye dekhne k liye hai ki agar sirf 1 checked reh gaya to use disable kardo, kyunki 1 to chahiye predict krne k liye
+//x is number of checked boxes
+if(document.getElementById(id+'ch').checked == true){
+x=x+1;
+}
+else{
+x=x-1;
+}
+//agar 1 reh gya to use disable krdo
+if(x==len-1){
+
+for(i=1;i<=len;i++){
+if(document.getElementById(i+'ch').checked == false){
+document.getElementById(i+'ch').disabled = true;
+}
+}
+}
+//ye step hai ki us 1 ko disable krne k baad agar user ne 1 uncheck kar diya to use vapas se undisable karo
+else{
+for(i=1;i<=len;i++){
+if(document.getElementById(i+'ch').disabled == true){
+document.getElementById(i+'ch').disabled = false;
+}
+}
+}
+//agar check kr diya to radio disable kardo, agar uncheck, to undisable(also uncheck it)
+if(document.getElementById(id).disabled == false){
+document.getElementById(id).disabled = true;
+document.getElementById(id).checked = false;
+}
+else{
+document.getElementById(id).disabled = false;
+}
+}
+</script>
+<hr><br>
+<div id="testdata" style="display:none">
+<center><h4>Test Dataset</h4></center><br><br>
+<center>
+	<div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Rows: {{test_rows}} </center></div>
+	<div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Columns: {{test_cols}}</center></div>
+</center>
+<br><hr>
+<center><h5>Top 10 rows of test dataset for visualization:</h5></center><br>
+{{test_data1 | safe}}
+<br><hr><br>
+
+<form id="testform" action="{% url 'prec_' %}" method="post">
+{% csrf_token %}
+<div style="padding-bottom:5px" class="row">
+<div style="border-right:1.5px solid #C0C0C0" class="col">
+<center><h5>Select n-1 columns to include in testing:</h5></center><br>
+<div style="padding-left:200px;display:inline-block" >
+{% for link in test_arr %}
+    <input id='ch{{forloop.counter}}' onclick="func_({{forloop.counter}})"  type="checkbox" name="checks_[]" value={{forloop.counter0}} />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+<div class="col">
+<center><h5>Select target column:</h5></center><br>
+<div style="padding-left:200px;display:inline-block" >
+{% for link in test_arr %}
+    <input id='{{forloop.counter}}_' type="radio" name="target_" value={{forloop.counter0}} required />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+</div>
+<center><input type="submit" value="Test Model"></center>
+</form>
+<center><h5><div id="spinner_">&nbsp;</div></h5></center>
+<hr><br>
+<center id="chartTop" style="color:grey"></center>
+<div id="chartDiv"></div><br>
+<div id="chartDiv1"></div><br>
+<center><div style="overflow-x:auto"><table id="result" bgcolor="white" class="table table-striped table-bordered"></table></div></center><br>
+<script>
+function func_(id){
+var len={{test_arr|length}};
+
+if(document.getElementById('ch'+id).checked == true){
+y=y+1;
+}
+else{
+y=y-1;
+}
+//y is no of test vale checked boxes. agar x jitne ho gye to baki sab checkboxes ko disable krdo because train and test ke input columns same hone chahiye.
+if(y==x){
+for(i=1;i<=len;i++){
+if(document.getElementById('ch'+i).checked == false){
+document.getElementById('ch'+i).disabled = true;
+}
+}
+}
+
+else{
+for(i=1;i<=len;i++){
+if(document.getElementById('ch'+i).disabled == true){
+document.getElementById('ch'+i).disabled = false;
+}
+}
+}
+//jis checkbox pe click hua ab uske corresponding radio button ko disable/undisable karo
+if(document.getElementById(id+'_').disabled == false){
+document.getElementById(id+'_').disabled = true;
+document.getElementById(id+'_').checked = false;
+}
+else{
+document.getElementById(id+'_').disabled = false;
+}
+}
+</script>
+<script>
+$("#testform").submit(function(e) {
+e.preventDefault();
+var n = $('input:checkbox[id^="ch"]:checked').length;
+if(!n) {
+   alert("You must check at least one column checkbox.");
+   return false;
+}
+if(x!=y){
+alert("Number of features of the model must match the input. Please select "+x+" features");
+return false;
+}
+$("#spinner_").css("color", "black");
+$("#spinner_").html("<span class='spinner-border text-primary spinner-border-sm' style='width: 3rem; height: 3rem;vertical-align: middle;' role='status' aria-hidden='true'></span>&nbsp;&nbsp; Testing Model...<br>");
+var serializedData=$("#testform").serialize();
+$.ajax({
+url:$("#testform").attr('action'),
+data:serializedData,
+type:'post',
+success: function(response){
+$("#spinner_").css("color", "#00D54F");
+$("#spinner_").html("Model tested successfully!");
+$("#result").html('<caption></caption>');
+$("#result").append('<tr style="background-color:#404850;color:white"><td><center>Rank</center></td><td>Algorithm</td><td>TP</td><td>TN</td><td>FP</td><td>FN</td><td>Accuracy</td><td>Precision</td><td>Recall</td><td>F1</td><td style="background-color:#F9F9F9;border-top-color:transparent;border-right-color:transparent"></td></tr>')
+
+{% if user.is_authenticated %}
+for (var i=0; i<response.regs; i++) {
+if(i==0){
+$("#result").append('<tr style="border:3px solid #FFD34B;box-shadow:0 0 6px #FFD34B"><td><center><b>'+(i+1)+'</b></center></td><td><b>'+response.models[i][8]+'</b></td><td>'+response.models[i][0]+'</td><td>'+response.models[i][1]+'</td><td>'+response.models[i][2]+'</td><td>'+response.models[i][3]+'</td><td>'+response.models[i][4]+'</td><td>'+response.models[i][5]+'</td><td>'+response.models[i][6]+'</td><td>'+response.models[i][7]+'</td><td><button style="width:100%" onclick="savemodel(this.id)" class="btn btn-outline-primary" id="sb'+response.models[i][9]+'">Save Model</button></td></tr>');
+}
+else{
+$("#result").append('<tr><td><center><b>'+(i+1)+'</b></center></td><td><b>'+response.models[i][8]+'</b></td><td>'+response.models[i][0]+'</td><td>'+response.models[i][1]+'</td><td>'+response.models[i][2]+'</td><td>'+response.models[i][3]+'</td><td>'+response.models[i][4]+'</td><td>'+response.models[i][5]+'</td><td>'+response.models[i][6]+'</td><td>'+response.models[i][7]+'</td><td><button style="width:100%" onclick="savemodel(this.id)" class="btn btn-outline-primary" id="sb'+response.models[i][9]+'">Save Model</button></td></tr>');
+}
+}
+{% else %}
+for (var i=0; i<response.regs; i++) {
+if(i==0){
+$("#result").append('<tr style="border:3px solid #FFD34B;box-shadow:0 0 6px #FFD34B"><td><center><b>'+(i+1)+'</b></center></td><td><b>'+response.models[i][8]+'</b></td><td>'+response.models[i][0]+'</td><td>'+response.models[i][1]+'</td><td>'+response.models[i][2]+'</td><td>'+response.models[i][3]+'</td><td>'+response.models[i][4]+'</td><td>'+response.models[i][5]+'</td><td>'+response.models[i][6]+'</td><td>'+response.models[i][7]+'</td><td><button style="width:100%" class="btn btn-danger btn-sm" disabled>Login to save</button></td></tr>');
+}
+else{
+$("#result").append('<tr><td><center><b>'+(i+1)+'</b></center></td><td><b>'+response.models[i][8]+'</b></td><td>'+response.models[i][0]+'</td><td>'+response.models[i][1]+'</td><td>'+response.models[i][2]+'</td><td>'+response.models[i][3]+'</td><td>'+response.models[i][4]+'</td><td>'+response.models[i][5]+'</td><td>'+response.models[i][6]+'</td><td>'+response.models[i][7]+'</td><td><button style="width:100%" class="btn btn-danger btn-sm" disabled>Login to save</button></td></tr>');
+}
+}
+{% endif %}
+
+$('html, body').animate({
+        scrollTop: $("#chartTop").offset().top
+    }, 1000);
+$("#chartTop").html('Press the below buttons to remove/add that measure from comparison');
+
+//var lbls = response.regnames;
+
+$("#chartDiv").html('<br><center><canvas id="myChart" width="800" height="300"></canvas></center>');
+var ctx = document.getElementById("myChart");
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: response.regnames,
+    datasets: [
+{
+  data: response.accuracy,
+  backgroundColor: "#FF6384",
+  label: "Accuracy",
+},
+{
+  data: response.precision,
+  backgroundColor: "#4BC0C0",
+  label: "Precision",
+},
+{
+  data: response.recall,
+  backgroundColor: "#5D6D7E",
+  label: "Recall",
+},
+{
+  data: response.f1,
+  backgroundColor: "#03A9F4",
+  label: "F1",
+}
+    ]
+  },
+  options: {        
+	scales: {
+        yAxes: [{
+            display: true,
+            ticks: {
+                suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+            },
+        }]
+    }
+}
+});
+//second chart:------------------------------
+$("#chartDiv1").html('<br><center><canvas id="myChart1" width="800" height="300"></canvas></center>');
+var ctx1 = document.getElementById("myChart1");
+var myChart1 = new Chart(ctx1, {
+  type: 'bar',
+  data: {
+    labels: response.regnames,
+    datasets: [
+{
+  data: response.tp,
+  backgroundColor: "#FF6384",
+  label: "True Positive",
+},
+{
+  data: response.tn,
+  backgroundColor: "#4BC0C0",
+  label: "True Negative",
+},
+{
+  data: response.fp,
+  backgroundColor: "#5D6D7E",
+  label: "False Positive",
+},
+{
+  data: response.fn,
+  backgroundColor: "#03A9F4",
+  label: "False Negative",
+}
+    ]
+  },
+  options: {        
+	scales: {
+        yAxes: [{
+            display: true,
+            ticks: {
+                suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+            },
+        }]
+    }
+}
+});
+},
+error: function (textStatus, errorThrown) {
+
+		$("#spinner_").css("color", "black");
+		$("#spinner_").html("Error! Model Testing was unsuccessful");
+}
+})
+});
+</script>
+<script>
+function savemodel(modelno){
+    document.getElementById(modelno).innerHTML = "<span class='spinner-border text-primary spinner-border-sm'></span>";
+    document.getElementById(modelno).disabled=true;
+
+$.ajax({
+  url:'/ml/savemodel/'+ modelno.substr(2),
+  type:'get',
+  success: function(response){
+  
+  document.getElementById(modelno).innerHTML = "<svg class='bi bi-check2-square' width='20px' height='20px' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M15.354 2.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L8 9.293l6.646-6.647a.5.5 0 0 1 .708 0z'/><path fill-rule='evenodd' d='M1.5 13A1.5 1.5 0 0 0 3 14.5h10a1.5 1.5 0 0 0 1.5-1.5V8a.5.5 0 0 0-1 0v5a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5h8a.5.5 0 0 0 0-1H3A1.5 1.5 0 0 0 1.5 3v10z'/></svg>Model Saved";
+  document.getElementById(modelno).className = "btn btn-primary";
+
+  },
+  error: function (textStatus, errorThrown) {
+  alert('Error!');
+  document.getElementById(modelno).innerHTML = "Save Model";
+  document.getElementById(modelno).disabled=false;
+  }
+  })
+}
+</script>
+</div>
+</div><br><br>
+{% endblock %}

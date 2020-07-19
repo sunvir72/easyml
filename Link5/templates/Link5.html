@@ -1,0 +1,124 @@
+{% extends 'basepage.html' %}
+{% block content %}
+<div style="background-color:#DEEEFF;color:#474747"><br><h2><center>Machine Learning portal</center></h2><hr></div><br>
+<div class="container"><br>
+
+<!-- The Modal -->
+  <div class="modal fade" id="myModal">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+
+        <div style="background-color:#343A40;color:white;border-radius:0px;border:1px solid white" class="modal-header">
+          <h4><center>Saved Models</center></h4>
+          <button type="button" style="color:white" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div id="body" style="background-color:#F9F9F9" class="modal-body">
+          	<table bgcolor="white" class="table table-bordered">
+			{% for i in modelList %}
+			<tr id="del{{i.7}}"><td>
+			<p style="display:inline-block;padding-right: 15px;color:blue">{{i.6}}</p><button id="btn{{forloop.counter}}" onclick="show({{forloop.counter}})" class="btn btn-sm btn-dark">details</button>
+				<div id={{forloop.counter}} style="display: none"><p><b>Input File:</b> {{i.0}}</p>
+				<p><b>Input features:</b> {{i.1}}</p>
+				<p><b>Target column:</b> {{i.2}}</p>
+				<p><b>Algorithm:</b> {{i.3}}</p>
+				<p><b>F1 score:</b> {{i.5}}</p>
+				<p><b>Timestamp:</b> {{i.4}}</p>
+			</div>
+			</td><td><a style="color:white;cursor:pointer" class="btn btn-sm btn-danger" onclick="delsm({{i.7}})">Delete</a></td></tr>
+			{% endfor %}
+			</table>
+			<script>
+				function show(divno){
+					if(document.getElementById(divno).style.display=="block"){
+						document.getElementById(divno).style.display="none";
+						document.getElementById("btn"+divno).innerHTML="details";
+					}
+					else{
+						document.getElementById(divno).style.display="block";
+						document.getElementById("btn"+divno).innerHTML="hide";
+
+					}
+				}
+			</script>
+			<script>
+			function delsm(smid) {
+
+				$.ajax({
+				url:'/ml/delsm/'+ smid ,
+				type:'get', 
+				success: function(){
+					document.getElementById("del"+smid).remove();
+				    //$('#topicele[data-id="'+ dataId +'"]').remove();
+				},
+				error: function (textStatus, errorThrown) {
+					alert('Error! Plase check your internet connection');
+				}
+				})
+				
+				}
+			</script>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<div style="background-color:white" class="row">
+	<div style="border:0.5px solid #e5e5e5" class="col">
+		<center><br>
+	<h4>Train and test new model</h4><hr>
+	<p style="color:grey">Only .csv files will be accepted</p><br>
+	<form method="post" action="{% url 'rowcol' %}" enctype="multipart/form-data">
+		{% csrf_token %}
+		Training Set&nbsp;&nbsp;<input style="border: 1px solid #0086FF;padding:5px;border-radius: 8px;width: 250px" type="file" name="train" accept=".csv" required><br><br>
+		Test Set&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style="border: 1px solid #0086FF;padding:5px;border-radius: 8px;width: 250px" type="file" name="test" accept=".csv" required><br><br>
+		<button class="btn btn-primary" type="submit">Upload</button>
+	</form>
+</center>
+	</div>
+{% if user.is_authenticated %}
+	{% if nomodel %}
+	<div style="border:0.5px solid #e5e5e5" class="col">
+		<center><br>
+		<h4>Use Saved Models <button class="btn btn-danger btn-sm" > You don't have any saved model</button></h4><hr>
+		<p style="color:grey">These models have been saved using the 'Train and test new model' option</p>
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			Test Set&nbsp;&nbsp;<input style="border: 1px solid #0086FF;padding:5px;border-radius: 8px;width: 250px" type="file" name="test_sm" accept=".csv" disabled><br><br>
+			<button class="btn btn-primary" type="submit" disabled>Upload</button>
+		</form>
+		<button style="white-space: nowrap;" id="{{st.name}},{{st.id}}" type="button" class="btn btn-sm btn-dark" data-toggle="modal" data-target="#myModal" disabled>View Models</button><br>
+		</center>
+	</div>
+	{% else %}
+	<div style="border:0.5px solid #e5e5e5" class="col">
+		<center><br>
+		<h4>Use Saved Models</h4><hr>
+		<p style="color:grey">These models have been saved using the 'Train and test new model' option</p>
+		<form method="post" action="{% url 'smml' %}" enctype="multipart/form-data">
+			{% csrf_token %}
+			Test Set&nbsp;&nbsp;<input style="border: 1px solid #0086FF;padding:5px;border-radius: 8px;width: 250px" type="file" name="test_sm" accept=".csv" required><br><br>
+			<button class="btn btn-primary" type="submit">Upload</button>
+		</form>
+		<button style="white-space: nowrap;" id="{{st.name}},{{st.id}}" type="button" class="btn btn-sm btn-dark" data-toggle="modal" data-target="#myModal">View Models</button><br>
+		</center>
+	</div>
+	{% endif %}
+{% else %}
+	<div style="border:0.5px solid #e5e5e5" class="col">
+		<center><br>
+		<h4>Use Saved Models <a class="btn btn-danger btn-sm" href="{% url 'userlogin' %}"> Login required</a></h4><hr>
+		<p style="color:grey">These models have been saved using the 'Train and test new model' option</p>
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			Test Set&nbsp;&nbsp;<input style="border: 1px solid #0086FF;padding:5px;border-radius: 8px;width: 250px" type="file" name="test_sm" accept=".csv" disabled><br><br>
+			<button class="btn btn-primary" type="submit" disabled>Upload</button>
+		</form>
+		<button style="white-space: nowrap;" id="{{st.name}},{{st.id}}" type="button" class="btn btn-sm btn-dark" data-toggle="modal" data-target="#myModal" disabled>View Models</button><br>
+		</center>
+	</div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

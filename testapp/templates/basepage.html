@@ -1,0 +1,160 @@
+{% load static %}
+<html>
+<head>
+<link rel="shortcut icon" type="image/png" href="{% static 'img/mlbg3.png' %}" />
+<title>Easy ML</title>
+
+<style>
+.top-container {
+  background-color: #FFF6E9;
+  padding: 0.1px;
+  text-align: center;
+}
+body {margin:0;}
+
+</style>
+<style>
+h1,h2,h3,h4,h5,h6,p {
+  font-family:Arial;
+}
+table{
+  white-space: nowrap;
+}
+input[type=submit] {
+  background-color: #376DF3;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+input[type=radio],input[type=checkbox] {
+width:30px;
+height:20px;
+vertical-align: middle;
+margin: 5px 0;
+cursor: pointer;
+}
+div {
+  word-wrap: break-word;
+}
+p.hh {
+margin: 0;
+padding: 0;
+}
+hr.hh{
+border-color:#97B7E1;
+margin: 0;
+padding: 0;
+max-width: 700px;
+margin-bottom:10px;
+}
+.custom-control-label::before, 
+.custom-control-label::after {
+width: 1.25rem !important;
+height: 1.25rem !important;
+cursor:pointer ;
+}
+div.back_div{
+background-image: url("{% static "img/1.png" %}");
+  background-position: center;
+  background-repeat: no-repeat;
+  height:600;
+}
+</style>
+  <style type="text/css">
+
+    #printable { display: none; }
+
+    @media print
+    {
+        #non-printable { display: none; }
+        #printable { display: block; }
+    }
+    </style>
+<!-- Required meta tags -->
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+</head>
+  <style>
+  html, body{ 
+   margin:0; 
+  }
+
+
+body  {
+  background-image: url("{% static "img/hh5.jpg" %}");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+  </style>
+<body>
+<main>
+{% if user.is_authenticated %}
+<nav style="background-color:#333D4B;box-shadow: 0 0 10px grey" class="navbar navbar-expand-lg navbar-dark ">
+
+  <a style="width: 120; text-align: center;" class="navbar-brand" href="/"><img src="{% static "img/mlbg3.png" %}" width="40" height="40" align="middle"> Easy ML</a>
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/ml">ML portal</a>
+      </li>
+    </ul>
+    <span class="navbar-text" style="padding: 0">
+      <a class="nav-item nav-link" style="color:#D5F2F7;display: inline-block;padding-left: 0" >
+       <svg class="bi bi-person-fill" width="1em" style="font-size: 20px" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+       <path fill-rule="evenodd" d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+   &nbsp;<strong>{{user.first_name}}</strong></a>
+    <a style="font-size: 14px;" class="btn btn-outline-primary" href="{% url 'log_out' %}">Logout</a>
+    </span>
+  </div>
+
+</nav>
+
+
+
+{% else %}
+
+<nav style="background-color:#333D4B;box-shadow: 0 0 10px grey" class="navbar navbar-expand-lg navbar-dark ">
+
+  <a style="width: 120; text-align: center;" class="navbar-brand" href="/"><img src="{% static "img/mlbg3.png" %}" width="40" height="40" align="middle"> Easy ML</a>
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/ml">ML portal</a>
+      </li>
+    </ul>
+    <span class="navbar-text" style="padding: 0">
+      <a style="font-size: 14px" class="btn btn-outline-primary" href="/register">Register</a>&nbsp;&nbsp;
+      <a style="font-size: 14px" class="btn btn-outline-primary" href="{% url 'userlogin' %}">Login </a>
+    </span>
+  </div>
+
+</nav>
+{% endif %}
+
+{% block content %}
+{% endblock %}
+</div>
+</main>
+
+
+</body>
+</html>

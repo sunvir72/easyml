@@ -1,0 +1,129 @@
+{% extends 'basepage.html' %}
+{% block content %}
+<div style="background-color:white"><br><h2><center>Custom Dataset</center></h2><hr></div><br>
+<div class="container" style="background-color:white;border:1px solid #d1d1d1">
+
+<div id="testdata" >
+<center><h4>Test Dataset</h4></center><br><br>
+<center>
+  <div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Rows: {{test_rows_sm}} </center></div>
+  <div style="border: 1px solid #F39300;width: 49%;border-radius: 4px;padding:6px;display:inline-block"><center>Total Columns: {{test_cols_sm}}</center></div>
+</center>
+<br><hr>
+<center><h5>Top 10 rows of test dataset for visualization:</h5></center><br>
+{{test_data1_sm | safe}}
+<br><hr><br>
+
+<form id="testform" action="{% url 'sm_test' %}" method="post">
+{% csrf_token %}
+<div class="row">
+<div  style="border:0.5px solid #e1e1e1;padding-top:5px;padding-bottom:10px;" class="col">
+<h5>Select columns to include in testing:</h5><br>
+<div style="display:inline-block" >
+{% for link in test_arr_sm %}
+    <input id='ch{{forloop.counter}}' onclick="func_({{forloop.counter}})"  type="checkbox" name="checks_[]" value={{forloop.counter0}} />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+<div style="border:0.5px solid #e1e1e1;padding-top:5px;padding-bottom:10px;" class="col">
+<h5>Select target column:</h5><br>
+<div style="display:inline-block" >
+{% for link in test_arr_sm %}
+    <input id='{{forloop.counter}}_' type="radio" name="target_" value={{forloop.counter0}} required />{{link}}<br>
+{% endfor %}
+</div>
+</div>
+</div>
+<div class="row" style="padding-top:5px;border:0.5px solid #e1e1e1">
+  <div class="col">
+<h5>Select saved model:</h5>
+  {% for i in modelList %}
+  <br><input type="radio" name="smodel" value={{i.7}} required />
+  <p style="display:inline-block;padding-right: 15px"><a style="color:blue">{{i.6}}</a></p><button type="button" id="btn{{forloop.counter}}" onclick="show({{forloop.counter}})" class="btn btn-sm btn-dark">details</button>
+    <div id={{forloop.counter}} style="display: none;padding-left:30px"><p><b>Input File:</b> {{i.0}}</p>
+    <p><b>Input features:</b> {{i.1}}</p>
+    <p><b>Target column:</b> {{i.2}}</p>
+    <p><b>Algorithm:</b> {{i.3}}</p>
+    <p><b>F1 score:</b> {{i.5}}</p>
+    <p><b>Timestamp:</b> {{i.4}}</p>
+  </div>
+  
+  {% endfor %}
+</div></div><br>
+<center><input type="submit" value="Test Model"></center>
+</form>
+<center><h5><div id="spinner_">&nbsp;</div></h5></center>
+<br>
+
+<center><div style="overflow-x:auto"><table style="width:500px" id="result" bgcolor="white" class="table table-striped table-bordered"></table></div></center><br>
+<script>
+  function show(divno){
+    if(document.getElementById(divno).style.display=="block"){
+      document.getElementById(divno).style.display="none";
+      document.getElementById("btn"+divno).innerHTML="details";
+    }
+    else{
+      document.getElementById(divno).style.display="block";
+      document.getElementById("btn"+divno).innerHTML="hide";
+
+    }
+  }
+</script>
+
+<script>
+var x=0;
+function func_(id){
+if(document.getElementById(id+'_').disabled == false){
+document.getElementById(id+'_').disabled = true;
+document.getElementById(id+'_').checked = false;
+}
+else{
+document.getElementById(id+'_').disabled = false;
+}
+}
+</script>
+<script>
+$("#testform").submit(function(e) {
+e.preventDefault();
+var n = $('input:checkbox[id^="ch"]:checked').length;
+if(!n) {
+   alert("You must check at least one column checkbox.");
+   return false;
+}
+
+$("#spinner_").css("color", "black");
+$("#spinner_").html("<span class='spinner-border text-primary spinner-border-sm' style='width: 3rem; height: 3rem;vertical-align: middle;' role='status' aria-hidden='true'></span>&nbsp;&nbsp; Testing Model...<br>");
+var serializedData=$("#testform").serialize();
+$.ajax({
+url:$("#testform").attr('action'),
+data:serializedData,
+type:'post',
+success: function(response){
+$("#spinner_").css("color", "#00D54F");
+$("#spinner_").html("Model tested successfully!");
+$("#result").html('<caption></caption>');
+/*
+$("#result").append('<tr style="background-color:#404850;color:white"><td style="background-color:white"></td><td>True Positive</td><td>True Negative</td><td>False Positive</td><td>False Negative</td><td>Accuracy</td><td>Precision</td><td>Recall</td><td>F1</td></tr>')
+
+$("#result").append('<tr><td><b>'+response.regnames+'</b></td><td>'+response.tp+'</td><td>'+response.tn+'</td><td>'+response.fp+'</td><td>'+response.fn+'</td><td>'+response.accuracy+'</td><td>'+response.precision+'</td><td>'+response.recall+'</td><td>'+response.f1+'</td></tr>');
+*/
+$("#result").append('<tr><td style="background-color:#f1f1f1;width:35%">True Positive</td><td style="width:50%">'+response.tp+'</td></tr><tr><td style="background-color:#f1f1f1;">True Negative</td><td>'+response.tn+'</td></tr><tr><td style="background-color:#f1f1f1;">False Positive</td><td>'+response.fp+'</td></tr><tr><td style="background-color:#f1f1f1;">False Negative</td><td>'+response.fn+'</td></tr><tr><td style="background-color:#f1f1f1;">Accuracy</td><td>'+response.accuracy+'</td></tr><tr><td style="background-color:#f1f1f1;">Precision</td><td>'+response.precision+'</td></tr><tr><td style="background-color:#f1f1f1;">Recall</td><td>'+response.recall+'</td></tr><tr><td style="background-color:#f1f1f1;">F1</td><td>'+response.f1+'</td></tr>');
+
+$('html, body').animate({
+        scrollTop: $("#result").offset().top
+    }, 1000);
+
+},
+error: function (textStatus, errorThrown) {
+
+    $("#spinner_").css("color", "black");
+    $("#spinner_").html("Error! Please make sure the saved model is compatible. Click model details for more information");
+}
+})
+});
+</script>
+
+</div>
+</div>
+<br><br>
+{% endblock %}

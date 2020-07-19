@@ -1,0 +1,18 @@
+{% extends 'basepage.html' %}
+{% block content %}
+{% load static %}
+{% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-success" role="alert">
+    <center>{{ message }}</center>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<div class="container">
+  <h1 style="padding-top:50px">Welcome to the website</h1>
+</div>
+
+{% endblock %}
+
+

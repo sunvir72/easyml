@@ -1,0 +1,24 @@
+{% extends 'basepage.html' %}
+{% block content %}
+<div style="padding-top:24px;background-color:white"><h2><center>Login form</center></h2><hr></div><br>
+<div style="width:50%" class="container">
+{% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-warning" role="alert">
+    <center>{{ message }}</center>
+  </div>
+  {% endfor %}
+{% endif %}
+<br><br>
+<form style="background-color:white;padding:10px;border:1px solid #d1d1d1" action="{% url 'userlogin' %}" method="POST">
+    {% csrf_token %}
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control" name="email" placeholder="Enter email" required>
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" name="psswd" placeholder="Password" required>
+  </div>
+  <center><button type="submit" class="btn btn-primary">Login</button></center>
+</form>
+</div>
+{% endblock %}
